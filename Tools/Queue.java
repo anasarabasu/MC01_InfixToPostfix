@@ -93,11 +93,11 @@ public class Queue<E> {
     }
 
     public void iterate() {
-        // System.out.println(queue.length);
+        System.out.println(queue.length);
 
-        // for (E e : queue) {
-        //     if(e != null)
-        //         System.out.print(e + " ");
-        // }
+        for (E e : queue) {
+            if(e != null)
+                System.out.print(e + " ");
+        }
     }
 }
