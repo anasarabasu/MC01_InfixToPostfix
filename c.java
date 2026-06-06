@@ -2,6 +2,7 @@ import java.util.regex.Pattern;
 
 public final class c {
     public static final String RED = "\u001B[31m";
+    public static final String YEL = "\u001B[33m";
     public static final String DEF = "\u001B[0m";
 
     public static final String test1 = "(a + b) + (a" ;

@@ -62,4 +62,10 @@ public class Stack<E> {
         return element;
     }
 
+    public void iterate() {
+        for (E e : stack)
+            if(e != null) System.out.print(e + " ");
+    }
+
+    
 }

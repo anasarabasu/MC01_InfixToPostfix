@@ -18,7 +18,6 @@ public class Engine {
 
 
     public Engine() {
-        // init();
     }
 
 
@@ -28,7 +27,7 @@ public class Engine {
 
 
     // GUI - not sure if I should go through with this
-    private void init() {
+    private void gui() {
 
         JPanel panel = new JPanel();
         panel.setBackground(Color.GRAY);
@@ -71,32 +70,48 @@ public class Engine {
         frame.add(panel);
         
     }
-    
 
-    // checks for errors before proceeding
-    public void checkInput(String rawData) {
+    public void convertExpression(String input) {
+        
+        String expression = checkInput(input);
+
+        if(expression != null) {
+            System.out.println("\n" + "-".repeat(24) + "\n");
+            
+            convert(expression.split(" "));
+            System.out.println("\n\n" + c.DEF + "-".repeat(24) + "\n");
+
+
+
+        }
+
+    }
+
+    // cleans and checks for errors before proceeding
+    private String checkInput(String rawData) {
+
+        boolean valid = false; 
+
 
         // string clean up
         String expression = rawData
-            .replaceAll("([\\^*\\/%+-])", " $0 ") // +/ -> + /
-            .replaceAll("([\\da-zA-Z])()([\\^*\\/%+-])", "$1 $2 $3") // a+ -> a +
-            .replaceAll("([\\^*\\/%+-])()([\\da-zA-Z])", "$1 $2 $3") // +b -> + b
-            .replaceAll("(\\(|\\))", " $0 ")
-            .replaceAll("\\s+", " ") // "    " -> " "
+            .replaceAll("([\\^*\\/%+\\-\\(\\)])", " $0 ") // adds spaces on operators
+            .replaceAll("\\s+", " ") // removes extra spaces
             .replaceAll("(\\()\\s", "(") // "( " -> "("
             .replaceAll("\\s\\)", ")") // " )" -> ")"
-            .trim();
+            .trim()
+            .toUpperCase(); 
 
         
         // ERROR HANDLING : LESS THAN 5 TOKENS
-        if(expression.split(" ").length < 5) 
-            System.out.println(c.RED + "ERROR : Insufficent token amount!" + c.DEF);
+        if(expression.split(" ").length < 5 && expression.split(" ").length > 100) 
+            System.out.println(c.RED + "ERROR : Invalid token amount!" + c.DEF);
         
 
-        else {
-            // ERROR HANDLING : INVALID CHARACTERS
-            Matcher m = Pattern.compile("[^\\s()^*\\/%+\\-\\da-zA-Z]").matcher(expression);
-            if(m.find())
+        // ERROR HANDLING : INVALID CHARACTERS
+        else {            
+            Matcher m = Pattern.compile("[^\\s\\(\\)^*\\/%+\\-\\dA-Z]").matcher(expression);
+            if(m.find()) 
                 System.out.println(
                     c.RED + "ERROR : Invalid character!\n" +
                     " ".repeat(m.start()) + "v\n"  + c.DEF +
@@ -107,48 +122,49 @@ public class Engine {
             // ERROR HANDLING : ZERO DIVISION - initial
             else {
                 m = Pattern.compile("\\/\\s0").matcher(expression);
-                if(m.find()) 
+                if(m.find()) {
                     System.out.println(
                         c.RED + "ERROR : Division by zero!\n" +
                         " ".repeat(m.start()) + "v\n"  + c.DEF +
                         expression + "\n"
                     );
+                }
 
                 
                 // ERROR HANDLING : MALFORMED EXPRESSIONS
                 else {
                     m = Pattern.compile(
-                        "[\\^*\\/%+-]\\s[\\^*\\/%+-]|" + // (a + - b c)
-                        "^[\\^*\\/%+-]\\s[\\da-zA-Z]|"+ // (+ a b) 
-                        "[\\da-zA-Z]\\s[\\^*\\/%+-]$|"+ // (a b +)
-                        "[\\da-zA-Z]\\s[\\da-zA-Z]|" + // (a b)
+                        "[\\^*\\/%+-]\\s[\\^*\\/%+-]|" + // a + - b c
+                        "^[\\^*\\/%+-]\\s[\\dA-Z]|"+ // (+ a b) 
+                        "[\\dA-Z]\\s[\\^*\\/%+-]$|"+ // (a b +)
+                        "[\\dA-Z]\\s[\\dA-Z]|" + // (a b)
                         "[\\^*\\/%+-]\\)|" + // +)
                         "\\([\\^*\\/%+-]|" + // (+
-                        "\\)\\s[\\da-zA-Z]+|" +  // ) a
-                        "[\\da-zA-Z]\\s\\(|" +  // b (
+                        "\\)\\s[\\dA-Z]|" +  // ) a
+                        "[\\dA-Z]\\s\\(|" +  // b (
                         "\\)\\s\\(|" + // ) (
                         "\\(\\)" // ()
                     ).matcher(expression); 
-                    if(m.find() ) 
+                    if(m.find() ) {
                         System.out.println(
                             c.RED + "ERROR : Malformed expression!\n" +
                             " ".repeat(m.start()) + "v\n"  + c.DEF +
                             expression + "\n"
                         );
+                    }
 
 
                     // ERROR HANDLING : MISMATCHED PARENTHESES
                     else {
+                        valid = true;
+
                         m = Pattern.compile("[\\(\\)]").matcher(expression);
                         if(m.find()) {
                             String error = "";
-
-                            int index = 0;
-                            int pair = 0;
-                            
                             char[] e = expression.toCharArray();
-
-                            while(pair >= 0 && index < e.length) {
+                            
+                            int pair = 0, index = 0;
+                            do {
                                 switch(e[index]) {
                                     case ')':
                                         pair--;
@@ -171,76 +187,150 @@ public class Engine {
                                 
                                 index++;
                             }
-                        
-                            if(pair != 0)
+                            while(pair >= 0  && index < e.length) ;
+                            
+
+                            if(pair != 0) {
+                                valid = false;
+
                                 System.out.println(
                                     c.RED + "ERROR : Mismatched parenthesis!\n" +
                                     error + "\n" + c.DEF +
                                     expression + "\n"
                                 );
+                            }
                         }
-
-                        // PROCEED
-                        else {
-                            System.out.println("ok\n" + expression);
-                            convertToPostfix(expression.split(" "));
-                        } 
                     }
                 }
             }
         }
 
+
+        // PROCEED
+        if(valid) {
+            System.out.println(c.YEL + expression + c.DEF);
+            expression = expression.replaceAll("(\\()", " $0 ").replaceAll("(\\))", " $0 ").replaceAll("\\s+", " ").trim();
+        } 
+        else expression = null;
+
+        return expression;
+    }
+
+    
+    // find the operator's level
+    private int fetchPrecedence(String token) {
+        int level = -1;
+
+        if(token != null) {
+            if("+-".contains(token)) level = 0; 
+            else if("*/%".contains(token)) level = 1; 
+            else if("^".contains(token)) level = 2; 
+        }
+
+        return level;
     }
 
 
     // conversion functtion
-    private void convertToPostfix(String[] token) {
+    private void convert(String[] token) {
 
         Stack<String> stack = new Stack<>(String.class, token.length);
         Queue<String> postfix = new Queue<>(String.class, token.length);
         
-
+        int stackPrecedence = -1;
+        int currentPrecedence = 0;
 
         int index = 0;
-        boolean canProceed = true;
+        while(index < token.length) {
 
-        while(index < token.length && canProceed) {
 
-            // insert number or variable into postfix queue
-            if(Pattern.compile("[\\da-zA-Z]").matcher(token[index]).find()) {
+            // INSERT OPERANDS INTO QUEUE
+            if(token[index].matches("\\d+|[A-Z]")) 
+                postfix.enqueue(token[index]);
                 
-                // PAR
-            //     if(token[index].length() < 3) { // single parenthesis (a + b)
-            //             if(token[index].contains("(")) mismatch++;
-            //             if(token[index].contains(")")) mismatch--;
-            //         }
 
-            //     else { // multiple parenthesis ((a + b))
-            //         for (char t : token[index].toCharArray()) {
-            //             if(t == '(') mismatch++;
-            //             if(t == ')') mismatch--;
-            //         }
-            //     }
+            else {                 
+                currentPrecedence = fetchPrecedence(token[index]);
+                
+                
+                // PUSH OPERATORS INTO STACK
+                if(stack.isEmpty() || stackPrecedence < currentPrecedence || token[index].equals("(")) {
+                    stack.push(token[index]);
+                    stackPrecedence = currentPrecedence;
+                }
 
+                    
+                // POP OPERATORS FROM STACK
+                else {
 
-            //     postfix.enqueue(token[index]);
+                    // parenthesis group found - pop operators until opening parenthesis
+                    if(token[index].contains(")")) {
+                        do postfix.enqueue(stack.pop());   
+                        while(!stack.getTop().equals("("));
+
+                        stack.pop();
+                        stackPrecedence = fetchPrecedence(stack.getTop());
+                    }
+
+                    else if(stackPrecedence >= currentPrecedence) {
+
+                        // exponent
+                        if(stackPrecedence == currentPrecedence && stackPrecedence == 2) {
+                            stack.push(token[index]);
+                            stackPrecedence = currentPrecedence;
+                        }
+
+                        // higher or equal level
+                        else {
+                            do {
+                                postfix.enqueue(stack.pop());   
+                                stackPrecedence = fetchPrecedence(stack.getTop());
+                            }
+                            while(stackPrecedence >= currentPrecedence && !stack.isEmpty());
+                            
+                            stack.push(token[index]);
+                            stackPrecedence = fetchPrecedence(stack.getTop());
+                        }
+                    }
+                    
+                }
             }
 
-            // // parse operators
-            // else { 
-            //     if(index == token.length -  1)
-            //         postfix.enqueue(stack.pop());
-                
-            //     // ADD SUB
 
-            //     stack.push(token[index]);
-            // } 
-
+            System.out.println(c.YEL + ">>     " + token[index] + c.DEF);
+            
+            System.out.print("ST  :  ");
+            stack.iterate();
+            
+            System.out.print("\nPF  :  ");
+            postfix.iterate();
+            
+            System.out.println("\n\n");
+            
             index++;
         }
 
-        // postfix.iterate();
 
+        while(!stack.isEmpty()) {
+            postfix.enqueue(stack.pop());   
+
+            System.out.print(c.DEF + "ST  :  ");
+            stack.iterate();
+            
+            System.out.print("\nPF  :  ");
+            postfix.iterate();
+            
+            System.out.println("\n\n" + c.YEL);
+
+        }
+
+        postfix.iterate();
+    }
+
+
+    // evaluation postfix solution
+    private void evaluate(Queue postfix) {
+        
     }
 
 
