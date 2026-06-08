@@ -1,12 +1,14 @@
 import java.lang.reflect.Array;
 
 
-public class Queue<E> {
+public class Queue<E>{
 
     private E[] queue;
 
     private int size = 0;
     private int capacity;
+
+    public int getCapacity() {return capacity;}
 
     private int head = 0;
     private int tail = 0;
@@ -96,4 +98,5 @@ public class Queue<E> {
         for (E e : queue)
             if(e != null) System.out.print(e + " ");
     }
+
 }

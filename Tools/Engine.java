@@ -18,6 +18,7 @@ public class Engine {
 
 
     public Engine() {
+
     }
 
 
@@ -49,7 +50,7 @@ public class Engine {
         button = new JButton("Convert");
         button.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                checkInput(text.getText());
+                validate(text.getText());
             }
         });
         panel.add(button, c);
@@ -71,178 +72,125 @@ public class Engine {
         
     }
 
-    public void convertExpression(String input) {
+    // public void convertExpression(String input) {
         
-        String expression = checkInput(input);
+    //     String infix = validation(input);
 
-        if(expression != null) {
-            System.out.println("\n" + "-".repeat(24) + "\n");
+    //     if(infix != null) {
+    //         System.out.println("\n" + "-".repeat(24) + "\n");
             
-            convert(expression.split(" "));
-            System.out.println("\n\n" + c.DEF + "-".repeat(24) + "\n");
+
+    //         Queue<String> postfix = conversion(infix.split(" "));
+    //         System.out.println("\n\n" + c.DEF + "-".repeat(24) + "\n");
 
 
+    //         // System.out.println(evaluate(postfix));
+    //     }
 
-        }
-
-    }
-
-    // cleans and checks for errors before proceeding
-    private String checkInput(String rawData) {
-
-        boolean valid = false; 
+    // }
 
 
-        // string clean up
-        String expression = rawData
-            .replaceAll("([\\^*\\/%+\\-\\(\\)])", " $0 ") // adds spaces on operators
-            .replaceAll("\\s+", " ") // removes extra spaces
-            .replaceAll("(\\()\\s", "(") // "( " -> "("
-            .replaceAll("\\s\\)", ")") // " )" -> ")"
-            .trim()
-            .toUpperCase(); 
+    // checks for errors before proceeding
+    public String validate(String expression) {
 
+        // String expression = Helpers.normalise(dta);
         
-        // ERROR HANDLING : LESS THAN 5 TOKENS
-        if(expression.split(" ").length < 5 && expression.split(" ").length > 100) 
+        boolean isValid = true;
+
+
+        long start = System.nanoTime();
+        
+
+        if(!ErrorHandler.tokenSize(expression)) {
+            System.out.println((System.nanoTime() - start) / 1000000.0 + " ms");
             System.out.println(c.RED + "ERROR : Invalid token amount!" + c.DEF);
-        
 
-        // ERROR HANDLING : INVALID CHARACTERS
-        else {            
-            Matcher m = Pattern.compile("[^\\s\\(\\)^*\\/%+\\-\\dA-Z]").matcher(expression);
-            if(m.find()) 
+            isValid = false;
+        }
+        else {
+            int pos = ErrorHandler.invalidChar(expression);
+
+            if(pos > -1) {
+                System.out.println((System.nanoTime() - start) / 1000000.0 + " ms");
                 System.out.println(
                     c.RED + "ERROR : Invalid character!\n" +
-                    " ".repeat(m.start()) + "v\n"  + c.DEF +
+                    " ".repeat(pos) + "v\n"  + c.DEF +
                     expression + "\n"
                 );
-            
-            
-            // ERROR HANDLING : ZERO DIVISION - initial
+    
+                isValid = false;
+            }
             else {
-                m = Pattern.compile("\\/\\s0").matcher(expression);
-                if(m.find()) {
+                pos = ErrorHandler.maformedExp(expression);
+
+                if(pos > -1) {
+                    System.out.println((System.nanoTime() - start) / 1000000.0 + " ms");
                     System.out.println(
-                        c.RED + "ERROR : Division by zero!\n" +
-                        " ".repeat(m.start()) + "v\n"  + c.DEF +
+                        c.RED + "ERROR : Malformed expression!\n" 
+                        + " ".repeat(pos) + "v\n"  + c.DEF +
                         expression + "\n"
                     );
+    
+                    isValid = false;
                 }
-
-                
-                // ERROR HANDLING : MALFORMED EXPRESSIONS
                 else {
-                    m = Pattern.compile(
-                        "[\\^*\\/%+-]\\s[\\^*\\/%+-]|" + // a + - b c
-                        "^[\\^*\\/%+-]\\s[\\dA-Z]|"+ // (+ a b) 
-                        "[\\dA-Z]\\s[\\^*\\/%+-]$|"+ // (a b +)
-                        "[\\dA-Z]\\s[\\dA-Z]|" + // (a b)
-                        "[\\^*\\/%+-]\\)|" + // +)
-                        "\\([\\^*\\/%+-]|" + // (+
-                        "\\)\\s[\\dA-Z]|" +  // ) a
-                        "[\\dA-Z]\\s\\(|" +  // b (
-                        "\\)\\s\\(|" + // ) (
-                        "\\(\\)" // ()
-                    ).matcher(expression); 
-                    if(m.find() ) {
+                    pos = ErrorHandler.zeroDiv(expression);
+
+                    if(pos > -1) {
+                        System.out.println((System.nanoTime() - start) / 1000000.0 + " ms");
                         System.out.println(
-                            c.RED + "ERROR : Malformed expression!\n" +
-                            " ".repeat(m.start()) + "v\n"  + c.DEF +
+                            c.RED + "ERROR : Division by zero!\n" +
+                            " ".repeat(pos) + "v\n"  + c.DEF +
                             expression + "\n"
                         );
+
+                        isValid = false;
                     }
-
-
-                    // ERROR HANDLING : MISMATCHED PARENTHESES
                     else {
-                        valid = true;
+                        String error = ErrorHandler.mismatchedPar(expression);
+                        
+                        if(error == null) {
+                            System.out.println((System.nanoTime() - start) / 1000000.0 + " ms");
 
-                        m = Pattern.compile("[\\(\\)]").matcher(expression);
-                        if(m.find()) {
-                            String error = "";
-                            char[] e = expression.toCharArray();
-                            
-                            int pair = 0, index = 0;
-                            do {
-                                switch(e[index]) {
-                                    case ')':
-                                        pair--;
-                                        
-                                        if(pair < 0) error = error.concat("v");
-                                        else {
-                                            StringBuilder s = new StringBuilder(error);
-                                            error = s.deleteCharAt(s.lastIndexOf("v")).append(' ').toString();
-                                        }
+                        }
+                        else {
+                            System.out.println((System.nanoTime() - start) / 1000000.0 + " ms");
+                            System.out.println(
+                                c.RED + "ERROR : Mismatched parenthesis!\n" +
+                                error + "\n" + c.DEF +
+                                expression + "\n"
+                            );
 
-                                    default:
-                                        error = error.concat(" ");
-                                        break;
-
-                                    case '(':
-                                        pair++;
-                                        error = error.concat("v");
-                                        break;
-                                }
-                                
-                                index++;
-                            }
-                            while(pair >= 0  && index < e.length) ;
-                            
-
-                            if(pair != 0) {
-                                valid = false;
-
-                                System.out.println(
-                                    c.RED + "ERROR : Mismatched parenthesis!\n" +
-                                    error + "\n" + c.DEF +
-                                    expression + "\n"
-                                );
-                            }
+                            isValid = false;
                         }
                     }
                 }
-            }
-        }
+            } 
+        } 
 
 
         // PROCEED
-        if(valid) {
+        if(isValid) {
             System.out.println(c.YEL + expression + c.DEF);
-            expression = expression.replaceAll("(\\()", " $0 ").replaceAll("(\\))", " $0 ").replaceAll("\\s+", " ").trim();
+            return expression;
         } 
-        else expression = null;
+        else return null;
 
-        return expression;
-    }
-
-    
-    // find the operator's level
-    private int fetchPrecedence(String token) {
-        int level = -1;
-
-        if(token != null) {
-            if("+-".contains(token)) level = 0; 
-            else if("*/%".contains(token)) level = 1; 
-            else if("^".contains(token)) level = 2; 
-        }
-
-        return level;
     }
 
 
     // conversion functtion
-    private void convert(String[] token) {
+    public Queue<String> convert(String[] token) {
 
         Stack<String> stack = new Stack<>(String.class, token.length);
         Queue<String> postfix = new Queue<>(String.class, token.length);
         
-        int stackPrecedence = -1;
-        int currentPrecedence = 0;
-
+        int stackPrecedence = -1, currentPrecedence = 0;
         int index = 0;
-        while(index < token.length) {
 
+        
+        long start = System.nanoTime();
+        do {
 
             // INSERT OPERANDS INTO QUEUE
             if(token[index].matches("\\d+|[A-Z]")) 
@@ -250,7 +198,7 @@ public class Engine {
                 
 
             else {                 
-                currentPrecedence = fetchPrecedence(token[index]);
+                currentPrecedence = Helpers.fetchPrecedence(token[index]);
                 
                 
                 // PUSH OPERATORS INTO STACK
@@ -269,7 +217,7 @@ public class Engine {
                         while(!stack.getTop().equals("("));
 
                         stack.pop();
-                        stackPrecedence = fetchPrecedence(stack.getTop());
+                        stackPrecedence = Helpers.fetchPrecedence(stack.getTop());
                     }
 
                     else if(stackPrecedence >= currentPrecedence) {
@@ -284,12 +232,12 @@ public class Engine {
                         else {
                             do {
                                 postfix.enqueue(stack.pop());   
-                                stackPrecedence = fetchPrecedence(stack.getTop());
+                                stackPrecedence = Helpers.fetchPrecedence(stack.getTop());
                             }
                             while(stackPrecedence >= currentPrecedence && !stack.isEmpty());
                             
                             stack.push(token[index]);
-                            stackPrecedence = fetchPrecedence(stack.getTop());
+                            stackPrecedence = Helpers.fetchPrecedence(stack.getTop());
                         }
                     }
                     
@@ -297,41 +245,104 @@ public class Engine {
             }
 
 
-            System.out.println(c.YEL + ">>     " + token[index] + c.DEF);
+            // System.out.println(c.YEL + ">>     " + token[index] + c.DEF);
             
-            System.out.print("ST  :  ");
-            stack.iterate();
+            // System.out.print("ST  :  ");
+            // stack.iterate();
             
-            System.out.print("\nPF  :  ");
-            postfix.iterate();
+            // System.out.print("\nPF  :  ");
+            // postfix.iterate();
             
-            System.out.println("\n\n");
+            // System.out.println("\n\n");
             
             index++;
         }
+        while(index < token.length);
 
 
-        while(!stack.isEmpty()) {
+        while(!stack.isEmpty())
             postfix.enqueue(stack.pop());   
+        // System.out.print(c.DEF + "ST  :  ");
+        // stack.iterate();
+        
+        // System.out.print("\nPF  :  ");
+        // postfix.iterate();
+        
+        // System.out.println("\n\n" + c.YEL);
 
-            System.out.print(c.DEF + "ST  :  ");
-            stack.iterate();
-            
-            System.out.print("\nPF  :  ");
-            postfix.iterate();
-            
-            System.out.println("\n\n" + c.YEL);
 
-        }
-
+        System.out.println((System.nanoTime() - start) / 1000000.0  + " ms" + c.YEL);
         postfix.iterate();
+
+        System.out.println(c.DEF);
+
+        return postfix;
     }
 
 
     // evaluation postfix solution
-    private void evaluate(Queue postfix) {
-        
-    }
+    public double evaluate(Queue<String> queue) {
 
+        String error = "";
+        Stack<Double> solution = new Stack<>(Double.class, queue.getCapacity());
+
+        boolean isValid = true;
+        
+        long start = System.nanoTime();
+
+        do {
+            String token = queue.dequeue();
+            error = error.concat(token + " ");
+
+            if(Helpers.isVar(token)) {
+                solution.push(-1.0);
+                isValid = false;
+            }
+            else {
+
+                // OPERATORS
+                if("+-*/%^".contains(token)) {
+                    double R = solution.pop();
+                    double L = solution.pop();
+
+                    if(token.equals("/") && R == 0) {
+                        
+
+                        solution.push(0.0);
+                        isValid = false; // zero div checker
+                    }
+                    else solution.push(Helpers.compute(L, R, token));
+                }
+
+                // OPERANDS
+                else solution.push(Double.parseDouble(token));
+            }
+
+        }
+        while(!queue.isEmpty() && isValid);
+
+
+        System.out.println((System.nanoTime() - start) / 1000000.0 +  " ms" + c.YEL);
+
+                    
+        if(isValid) return solution.getTop();
+        else {
+            if(solution.getTop() < 0)
+                System.out.println(
+                    c.RED + "ERROR : Can't evaluate an expression with varibles\n" + c.DEF+
+                    " ".repeat(error.length()-2) + "v\n"  + c.DEF +
+                    error
+                );
+            else 
+                System.out.println(
+                    c.RED + "ERROR : Division by zero!\n" + c.DEF  +
+                    " ".repeat(error.length()-2) + "v\n"  + c.DEF +
+                    error
+                );
+
+            return -1;
+        } 
+
+    }
 
 }

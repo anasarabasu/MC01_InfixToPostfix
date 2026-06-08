@@ -1,4 +1,3 @@
-import java.util.regex.Pattern;
 
 public final class c {
     public static final String RED = "\u001B[31m";
