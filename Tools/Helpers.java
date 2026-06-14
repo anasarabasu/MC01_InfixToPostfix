@@ -32,15 +32,6 @@ public final class Helpers {
     }
 
 
-    // check if operand is a variable
-    public static boolean isVar(String token) {
-
-        if(token.matches("[A-Z]")) return true;
-        else return false;
-
-    }
-
-
     // computes depending on the operator
     public static double compute(double X, double Y, String operator) {
         
@@ -52,7 +43,7 @@ public final class Helpers {
             case "*" -> result = X * Y;
             case "/"  -> result = 1.0 * X / Y;
             case "%" -> result = X % Y;
-            case "^" -> result = (int) Math.pow(X, Y);
+            case "^" -> result = Math.pow(X, Y);
         }
 
         return result;
@@ -64,46 +55,50 @@ public final class Helpers {
     public static String generateExpression(int maxTokens, int maxValue) {
 
         Random r = new Random();
-        
         String exp = "";
-        
-        char operators[] = {'+', '-', '*', '/', '%', '^'};
+
+        char operators[] = { // weighted
+            '+', '+', '+', '+', '+', '+', '+', '+', '+', '+', '+', '+', 
+            '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 
+            '*', '*', '*', '*',  
+            '/', 
+            '%', 
+            '^'
+        };
+
+        boolean oSwitch = true;
         int pCount = 0; // number of parentheses
         
-        boolean oSwitch = true;
-        
-        int length = r.nextInt(5, maxTokens);
-        
+        int length = r.nextInt(5, maxTokens+1);
         length = length % 2 == 0 ? length + 1 : length;
+
+        boolean caAddPar = false; // prevents situations like (123) + 456
+
         for (int i = 0; i < length; i++) {
 
             // switch 
             if(oSwitch) {
+                caAddPar = true;
+
                 // adds parentheses
-                if(r.nextBoolean() && r.nextBoolean() && r.nextBoolean()){
-                    exp = exp.concat("(");
+                if(r.nextBoolean() && r.nextBoolean() && r.nextBoolean() && i < length-1){
+                    caAddPar = false;
+                    exp = exp.concat("( ");
                     pCount++;
                 }
 
+                exp = exp.concat(r.nextInt(Math.powExact(10, maxValue)) + 1 + " ");
 
-                exp = exp.concat(r.nextInt(maxValue) + " ");
-                exp = exp.concat(operators[r.nextInt(0, 6)] + " ");
-                exp = exp.concat(r.nextInt(maxValue) + " ");
-
-                
                 // closing parenthesis
-                while(pCount > 0 && r.nextBoolean() && r.nextBoolean() && r.nextBoolean()) {
+                while(pCount > 0 && r.nextBoolean() && r.nextBoolean() && r.nextBoolean() && caAddPar) {
                     exp = exp.concat(")");
                     pCount--;
                 }
+
             }
             else {
-                exp = exp.concat(operators[r.nextInt(0, 6)] + " ");
-                exp = exp.concat(r.nextInt(maxValue) + " ");
-                exp = exp.concat(operators[r.nextInt(0, 6)] + " ");
+                exp = exp.concat(operators[r.nextInt(0, operators.length)] + " ");
             }
-
-            
             
             oSwitch = !oSwitch;
 

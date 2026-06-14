@@ -94,9 +94,13 @@ public class Queue<E>{
         return element;
     }
 
-    public void iterate() {
-        for (E e : queue)
-            if(e != null) System.out.print(e + " ");
+    public String iterate() {
+        String string = "";
+        for (E e : queue) 
+            if(e != null) string = string.concat(e + " ");
+        
+        System.out.print(string);
+        return string;
     }
 
 }

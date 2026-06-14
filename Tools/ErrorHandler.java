@@ -82,10 +82,13 @@ public final class ErrorHandler {
             "\\d[A-Z]|[A-Z]\\d|" + // 2a
             "[\\^*\\/%+-]\\s\\)|" + // + )
             "\\(\\s[\\^*\\/%+-]|" + // ( +
+            "\\)\\s[\\^*\\/%+-]$|" + // ) +
+            "^[\\^*\\/%+-]\\s\\(|" + // + (
             "\\)\\s[\\dA-Z]|" +  // ) a
             "[\\dA-Z]\\s\\(|" +  // b (
             "\\)\\s\\(|" + // ) (
             "\\(\\s\\)" // ( )
+            // "\\(\\s[\\dA-Z]\\s\\)" // ( a )
         ).matcher(expression); 
 
         if(m.find()) return m.start();
@@ -138,7 +141,7 @@ public final class ErrorHandler {
     // ERROR HANDLING : ZERO DIVISION
     public static int zeroDiv(String expression) {
 
-        Matcher m = Pattern.compile("\\/\\s0").matcher(expression);
+        Matcher m = Pattern.compile("\\/\\s0|%\\s0").matcher(expression);
 
 
         if(m.find()) return m.start();
