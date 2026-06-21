@@ -2,21 +2,6 @@ import java.util.Random;
 
 public final class Helpers {
 
-    // string clean up
-    public static String normalise(String raw) {
-
-        String expression = raw
-            .replaceAll("([\\^*\\/%+\\-\\(\\)])", " $0 ") // adds spaces on operators
-            .replaceAll("\\s+", " ") // removes extra spaces
-            // .replaceAll("(\\()\\s", "(") // "( " -> "("
-            // .replaceAll("\\s\\)", ")") // " )" -> ")"
-            .trim()
-            .toUpperCase(); 
-
-        return expression;
-
-    }
-
 
     // find the operator's level
     public static int fetchPrecedence(String token) {
@@ -69,8 +54,11 @@ public final class Helpers {
         boolean oSwitch = true;
         int pCount = 0; // number of parentheses
         
-        int length = r.nextInt(5, maxTokens+1);
-        length = length % 2 == 0 ? length + 1 : length;
+        // int length = r.nextInt(5, maxTokens+1);
+        // length = length % 2 == 0 ? length + 1 : length;
+
+        // int length = r.nextInt(5, maxTokens+1);
+        int length = maxTokens % 2 == 0 ? maxTokens + 1 : maxTokens;
 
         boolean caAddPar = false; // prevents situations like (123) + 456
 

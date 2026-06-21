@@ -5,8 +5,30 @@ public class Engine {
 
     private String expression = "";
 
+
+    // string clean up
+    public String normalise(String raw) {
+
+        long start = System.nanoTime();
+
+        String expression = raw
+            .replaceAll("([\\^*\\/%+\\-\\(\\)])", " $0 ") // adds spaces on operators
+            .replaceAll("\\s+", " ") // removes extra spaces
+            // .replaceAll("(\\()\\s", "(") // "( " -> "("
+            // .replaceAll("\\s\\)", ")") // " )" -> ")"
+            .trim()
+            .toUpperCase(); 
+
+        double time = (System.nanoTime() - start) / 1000000.0;
+        System.out.println(time);
+        
+        return expression;
+
+    }
+    
+
     // checks for errors before proceeding
-    public String validate(String expression) {
+    public Queue<String> validate(String expression) {
 
         System.out.println(c.DEF + "-".repeat(24));
 
@@ -128,7 +150,14 @@ public class Engine {
         // PROCEED
         if(isValid) {
             System.out.println(c.YEL + expression + c.DEF);
-            return expression;
+
+            String a[] = expression.split(" ");
+            Queue<String> q = new Queue<>(String.class, a.length);
+
+            for (String string : a) 
+                q.enqueue(string);
+
+            return q;
         } 
         else return null;
 
@@ -136,31 +165,31 @@ public class Engine {
 
 
     // conversion functtion
-    public Queue<String> convert(String[] token) {
+    public Queue<String> convert(Queue<String> tokens) {
 
         System.out.println();
 
-        Stack<String> stack = new Stack<>(String.class, token.length);
-        Queue<String> postfix = new Queue<>(String.class, token.length);
-        
-        int stackPrecedence = -1, currentPrecedence = 0;
-        int index = 0;
+        Stack<String> stack = new Stack<>(String.class, tokens.getCapacity());
+        Queue<String> postfix = new Queue<>(String.class, tokens.getCapacity());
+        String token; 
 
+        int stackPrecedence = -1, currentPrecedence = 0;
         
         long start = System.nanoTime();
         do {
+            token = tokens.dequeue();
 
             // INSERT OPERANDS INTO QUEUE
-            if(token[index].matches("\\d+|[A-Z]")) 
-                postfix.enqueue(token[index]);
+            if(token.matches("\\d+|[A-Z]")) 
+                postfix.enqueue(token);
                 
 
             else {                 
-                currentPrecedence = Helpers.fetchPrecedence(token[index]);
+                currentPrecedence = Helpers.fetchPrecedence(token);
                 
                 // PUSH OPERATORS INTO STACK
-                if(stack.isEmpty() || stackPrecedence < currentPrecedence || token[index].equals("(")) {
-                    stack.push(token[index]);
+                if(stack.isEmpty() || stackPrecedence < currentPrecedence || token.equals("(")) {
+                    stack.push(token);
                     stackPrecedence = currentPrecedence;
                 }
 
@@ -169,7 +198,7 @@ public class Engine {
                 else {
                     
                     // parenthesis group found - pop operators until opening parenthesis
-                    if(token[index].contains(")")) {
+                    if(token.contains(")")) {
                         while(!stack.getTop().equals("(")) {
                             postfix.enqueue(stack.pop());   
                         }
@@ -182,7 +211,7 @@ public class Engine {
 
                         // exponent
                         if(stackPrecedence == currentPrecedence && stackPrecedence == 2) {
-                            stack.push(token[index]);
+                            stack.push(token);
                             stackPrecedence = currentPrecedence;
                         }
 
@@ -194,17 +223,15 @@ public class Engine {
                             }
                             while(stackPrecedence >= currentPrecedence && !stack.isEmpty());
                             
-                            stack.push(token[index]);
+                            stack.push(token);
                             stackPrecedence = Helpers.fetchPrecedence(stack.getTop());
                         }
                     }
                     
                 }
             }
-            
-            index++;
         }
-        while(index < token.length);
+        while(!tokens.isEmpty());
 
 
         while(!stack.isEmpty()) postfix.enqueue(stack.pop());   

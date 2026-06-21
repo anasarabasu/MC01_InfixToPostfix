@@ -3,8 +3,41 @@ import java.util.regex.Pattern;
 
 public final class ErrorHandler {
 
+    private String expression = "";
+    public String getExpression() {return expression;}
 
-    // ERROR HANDLING : LESS THAN 5 TOKENS
+
+    public ErrorHandler(String expression) {this.expression = expression;}
+
+
+    // public boolean hasErrors() {
+        
+    //     boolean isValid = true;
+
+    //     long start = System.nanoTime();
+    //     double time;
+
+    //     if(!tokenSize(expression)) {
+    //         time = (System.nanoTime() - start) / 1000000.0;
+
+    //         System.out.println(time + " ms");
+    //         System.out.println(c.RED + "ERROR : Invalid token amount!" + c.DEF);
+
+    //         // message = "<p>" + time + " ms -> <b style=\"color: red\">ERROR : Invalid token amount!</b></p>";
+
+    //         return false;
+    //     }
+        
+    //     // if)
+    //     int s = 0, e = s+3;
+
+    //     do {}
+
+    //     return true;
+
+    // }
+
+    // ERROR HANDLING : VALID TOKEN SIZE
     public static boolean tokenSize(String expression) {
         
         int spacer = 0;

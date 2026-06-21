@@ -6,6 +6,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.text.ParseException;
 
 import javax.swing.JButton;
@@ -42,9 +44,23 @@ public class GUI {
         // -----------------------------------------
 
         JTextArea text = new JTextArea(6, 64);
+        text.setText("Enter expression here");
         text.setFont(new Font("Courier", Font.PLAIN, 12));
         text.setMargin(new Insets(10, 16, 10, 16));
         text.setLineWrap(true);
+        text.addFocusListener(new FocusListener() {
+            
+            @Override
+            public void focusGained(FocusEvent arg0) {
+                if(text.getText().equals("Enter expression here")) text.setText("");
+            }
+            
+            @Override
+            public void focusLost(FocusEvent arg0) {
+                if(text.getText().isBlank()) text.setText("Enter expression here");
+            }
+            
+        });
         
         JScrollPane inputPane = new JScrollPane(text);
         c.insets = new Insets(4, 4, 4, 4);
@@ -147,12 +163,14 @@ public class GUI {
 
                 String t = "<font face=\"Courier\" size=6px> ";
 
-                String norm = Helpers.normalise(text.getText());
-                String val = engine.validate(norm);
+                String norm = engine.normalise(text.getText());
+
+                engine.validate(norm); // warm up
+                Queue<String> val = engine.validate(norm);
 
                 t = t.concat(engine.message);
                 if(val != null) {
-                    Queue<String> q = engine.convert(norm.split(" "));
+                    Queue<String> q = engine.convert(val);
                     t = t.concat(engine.message);
                     t = t.concat(engine.pf);
 
@@ -177,7 +195,7 @@ public class GUI {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                text.setText("");
+                text.setText("Enter expression here");
             }
             
         });
@@ -196,6 +214,7 @@ public class GUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 1000);
         frame.setVisible(true);
+        frame.requestFocusInWindow();
 
     }
 
