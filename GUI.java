@@ -131,7 +131,7 @@ public class GUI {
             public void actionPerformed(ActionEvent e) {
                 generateRandom.setVisible(false);
                 randomiserExtra.setVisible(true);
-                text.setText("Input the max number of tokens (min 5) and digits (max 9)");
+                text.setText("Input the max number of tokens (min 5) and digits (max 9)\nHowever, if token size > 100, the digit input will determine the bounds to avoid infinity");
             }
             
         });
@@ -164,6 +164,7 @@ public class GUI {
                 String t = "<font face=\"Courier\" size=6px> ";
 
                 String norm = engine.normalise(text.getText());
+                t = t.concat(engine.message);
 
                 engine.validate(norm); // warm up
                 Queue<String> val = engine.validate(norm);
@@ -176,7 +177,7 @@ public class GUI {
 
                     double sol = engine.evaluate(q);
                     t = t.concat(engine.message);
-                    t = t.concat("<br><h1 style=\"font-family: Courier\"> = " + sol + "</h1>");
+                    t = t.concat("<br><h1 style=\"font-family: Courier\"> = " + String.format( "%.4f", sol) + "</h1>");
                 }
                 
                 output.setText(t);

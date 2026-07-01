@@ -10,175 +10,137 @@ public final class ErrorHandler {
     public ErrorHandler(String expression) {this.expression = expression;}
 
 
-    // public boolean hasErrors() {
-        
-    //     boolean isValid = true;
-
-    //     long start = System.nanoTime();
-    //     double time;
-
-    //     if(!tokenSize(expression)) {
-    //         time = (System.nanoTime() - start) / 1000000.0;
-
-    //         System.out.println(time + " ms");
-    //         System.out.println(c.RED + "ERROR : Invalid token amount!" + c.DEF);
-
-    //         // message = "<p>" + time + " ms -> <b style=\"color: red\">ERROR : Invalid token amount!</b></p>";
-
-    //         return false;
-    //     }
-        
-    //     // if)
-    //     int s = 0, e = s+3;
-
-    //     do {}
-
-    //     return true;
-
-    // }
-
     // ERROR HANDLING : VALID TOKEN SIZE
+    // O(1) = constant
     public static boolean tokenSize(String expression) {
-        
-        int spacer = 0;
-        
-        for (int i = 0; spacer < 4 && i < expression.length(); i++) 
-            if(Character.isSpaceChar(expression.charAt(i))) spacer++;
-        
-        
-        if(spacer < 4) return false;
-        else return true;
-        
+
+        boolean canAdd = true;
+        int size = 0;
+
+        for(int i = 0; size < 5 && i < expression.length(); i++) { // 5
+            if(Character.isLetterOrDigit(expression.charAt(i))) { // 4
+                if(canAdd) {
+                    size++; // 4
+                    canAdd = false; // 4
+                }
+            }
+            else {
+                size++;
+                canAdd = true;
+            }
+        }
+
+        if(size < 5) // 1
+            return false; // 1
+        else 
+            return true;
     }
 
     
-    // // char by char checker
-    // public void checkForErrors() {
-
-    //     int i = 0;;
-    //     boolean isValid = true;
-
-    //     Matcher invalidChar = Pattern.compile("[^\\s\\(\\)^*\\/%+\\-\\dA-Z]").matcher(expression);
-        
-    //     Matcher malformedExp = Pattern.compile(
-    //         "[\\^*\\/%+-]\\s[\\^*\\/%+-]|" + // a + - b c
-    //         "^[\\^*\\/%+-]\\s[\\dA-Z]|"+ // (+ a b) 
-    //         "[\\dA-Z]\\s[\\^*\\/%+-]$|"+ // (a b +)
-    //         "[\\dA-Z]\\s[\\dA-Z]|" + // (a b)
-    //         "[\\^*\\/%+-]\\s\\)|" + // + )
-    //         "\\(\\s[\\^*\\/%+-]|" + // ( +
-    //         "\\)\\s[\\dA-Z]|" +  // ) a
-    //         "[\\dA-Z]\\s\\(|" +  // b (
-    //         "\\)\\s\\(|" + // ) (
-    //         "\\(\\s\\)" // ( )
-    //     ).matcher(expression); 
-
-    //     Matcher zeroDic = Pattern.compile("\\/\\s0").matcher(expression);
-
-
-    //     long start = System.nanoTime();
-
-
-    //     do {
-    //         String search = expression.substring(i, i+2);
-            
-
-    //         i++;
-    //     } 
-    //     while (isValid);
-
-
-    //     System.out.println((System.nanoTime() - start) / 1000000.0);
-    
-    // }
-
-
     // ERROR HANDLING : INVALID CHARACTERS
+    // O(n) = 1 + 1 + 1 + n + 1
     public static int invalidChar(String expression) {
         
-        Matcher m = Pattern.compile("[^\\s\\(\\)^*\\/%+\\-\\dA-Z]").matcher(expression);
+                        // O(1)                                        // O(1)
+        Matcher m = Pattern.compile("[^\\(\\)^*\\/%+\\-\\dA-Z]").matcher(expression);
 
-        if(m.find()) return m.start();
-        else return -1;
+        if(m.find()) // 1 + O(n)
+            return m.start(); // 1
+        else 
+            return -1;
 
     }
 
 
     // ERROR HANDLING : MALFORMED EXPRESSIONS
+    // O(n) = 1 + 1 + 1 + n + 1
     public static int maformedExp(String expression) {
 
+        // O(1) + O(1)
         Matcher m = Pattern.compile(
-            "[\\^*\\/%+-]\\s[\\^*\\/%+-]|" + // a + - b c
-            "^[\\^*\\/%+-]\\s[\\dA-Z]|"+ // (+ a b) 
-            "[\\dA-Z]\\s[\\^*\\/%+-]$|"+ // (a b +)
-            "[\\dA-Z]\\s[\\dA-Z]|" + // (a b)
+            "[\\^*\\/%+-][\\^*\\/%+-]|" + // a + - b c
+            "^[\\^*\\/%+-][\\dA-Z]|"+ // (+ a b) 
+            "[\\dA-Z][\\^*\\/%+-]$|"+ // (a b +)
+            // "[\\dA-Z][\\dA-Z]|" + // (a b)
             "\\d[A-Z]|[A-Z]\\d|" + // 2a
-            "[\\^*\\/%+-]\\s\\)|" + // + )
-            "\\(\\s[\\^*\\/%+-]|" + // ( +
-            "\\)\\s[\\^*\\/%+-]$|" + // ) +
-            "^[\\^*\\/%+-]\\s\\(|" + // + (
-            "\\)\\s[\\dA-Z]|" +  // ) a
-            "[\\dA-Z]\\s\\(|" +  // b (
-            "\\)\\s\\(|" + // ) (
-            "\\(\\s\\)" // ( )
-            // "\\(\\s[\\dA-Z]\\s\\)" // ( a )
+            "[\\^*\\/%+-]\\)|" + // + )
+            "\\([\\^*\\/%+-]|" + // ( +
+            "\\)[\\^*\\/%+-]$|" + // ) +
+            "^[\\^*\\/%+-]\\(|" + // + (
+            "\\)[\\dA-Z]|" +  // ) a
+            "[\\dA-Z]\\(|" +  // b (
+            "\\)\\(|" + // ) (
+            "\\(\\)" // ( )
+            // "\\([\\dA-Z]\\)" // ( a )
         ).matcher(expression); 
 
-        if(m.find()) return m.start();
-        else return -1; 
+        if(m.find()) // 1 + O(n)
+            return m.start(); // 1
+        else 
+            return -1; 
 
     }
 
-    public static String mismatchedPar(String expression) {
 
+    // ERROR HANDLING : MISMATCHED PARENTHESIS
+    // O(n) = 1 + 1 + 1 + n + 1 + 1 + 2 + n + 3n + n + n + 2 
+    public static int mismatchedPar(String expression) {
+
+                    // O(1)                        // O(1)
         Matcher m = Pattern.compile("[\\(\\)]").matcher(expression);
 
+        // 1 + O(n)
         if(m.find()) {
-            String error = "";
-            char[] e = expression.toCharArray();
-            
-            int pair = 0, index = 0;
+            Stack<Integer> s = new Stack<>(Integer.class, expression.length()); // 1
+
+            char[] e = expression.toCharArray(); // 1
+            int pair = 0, index = 0;  // 2
             do {
                 switch(e[index]) {
-                    case ')':
-                        pair--;
+                    case ')': // n * 1
+                        // 3
+                        pair--; // n * 1
                         
-                        if(pair < 0) error = error.concat("v");
-                        else {
-                            StringBuilder s = new StringBuilder(error);
-                            error = s.deleteCharAt(s.lastIndexOf("v")).append(' ').toString();
-                        }
-
-                    default:
-                        error = error.concat(" ");
+                        if(pair < 0) // n * 1
+                            return index;
+                        else 
+                            s.pop(); // removes index of parentehsis with closing pair
+                        
                         break;
 
                     case '(':
                         pair++;
-                        error = error.concat("v");
+                        s.push(index);
                         break;
                 }
                 
-                index++;
+                index++; // n * 1
             }
-            while(pair >= 0  && index < e.length);
+            while(pair >= 0 && index < e.length); // n
 
-            if(pair > 0 || pair == -1) return error;
-            else return null;
+            if(pair > 0 || pair == -1) // 1
+                return s.getTop(); // 1
+            else
+                return -1;
         }    
-        else return null; // no par in exp
+        else 
+            return -1; // no par in exp
 
     }
 
 
     // ERROR HANDLING : ZERO DIVISION
+    // O(n) = 1 + 1 + 1 + n + 1
     public static int zeroDiv(String expression) {
 
-        Matcher m = Pattern.compile("\\/\\s0|%\\s0").matcher(expression);
+                        // O(1)                         // O(1)
+        Matcher m = Pattern.compile("\\/0|%0").matcher(expression);
 
-
-        if(m.find()) return m.start();
-        else return -1;
+        // O(n)
+        if(m.find()) 
+            return m.start(); // 1
+        else 
+            return -1;
 
     }
 

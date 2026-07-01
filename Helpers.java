@@ -4,16 +4,23 @@ public final class Helpers {
 
 
     // find the operator's level
+    // O(1) = 1 + 1 + 1 + 1 + 1 + 1
     public static int fetchPrecedence(String token) {
-        int level = -1;
+        // int level = -1; // 1
 
-        if(token != null) {
-            if("+-".contains(token)) level = 0; 
-            else if("*/%".contains(token)) level = 1; 
-            else if("^".contains(token)) level = 2; 
+        if(token != null) { // 1
+            if("+-".contains(token)) // 1
+                return 0; 
+            else 
+                if("*/%".contains(token)) // 1
+                    return 1; 
+                else 
+                    if("^".contains(token)) // 1
+                        return 2; // 1
         }
+        return -1;
 
-        return level;
+        // return level;
     }
 
 
@@ -60,32 +67,29 @@ public final class Helpers {
         // int length = r.nextInt(5, maxTokens+1);
         int length = maxTokens % 2 == 0 ? maxTokens + 1 : maxTokens;
 
-        boolean caAddPar = false; // prevents situations like (123) + 456
-
         for (int i = 0; i < length; i++) {
 
             // switch 
             if(oSwitch) {
-                caAddPar = true;
-
                 // adds parentheses
-                if(r.nextBoolean() && r.nextBoolean() && r.nextBoolean() && i < length-1){
-                    caAddPar = false;
-                    exp = exp.concat("( ");
-                    pCount++;
-                }
+                // if(r.nextBoolean() && r.nextBoolean() && r.nextBoolean() && i < length-1){
+                //     exp = exp.concat("(");
+                //     pCount++;
+                // }
 
-                exp = exp.concat(r.nextInt(Math.powExact(10, maxValue)) + 1 + " ");
+                int x = maxTokens > 100 ? r.nextInt(maxValue+1) : r.nextInt(Math.powExact(10, maxValue));
+                x = x == 0 ? x + 1 : x;
+                exp = exp.concat(x+"");
 
-                // closing parenthesis
-                while(pCount > 0 && r.nextBoolean() && r.nextBoolean() && r.nextBoolean() && caAddPar) {
-                    exp = exp.concat(")");
-                    pCount--;
-                }
+                // // closing parenthesis
+                // while(pCount > 0 && r.nextBoolean() && r.nextBoolean() && r.nextBoolean() && caAddPar) {
+                //     exp = exp.concat(")");
+                //     pCount--;
+                // }
 
             }
             else {
-                exp = exp.concat(operators[r.nextInt(0, operators.length)] + " ");
+                exp = exp.concat(operators[r.nextInt(0, operators.length)]+"");
             }
             
             oSwitch = !oSwitch;

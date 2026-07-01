@@ -7,20 +7,26 @@ public class Engine {
 
 
     // string clean up
+    // O(n) = 1 + 2n
+    // WHERE n IS RAW STRING LENGTH
     public String normalise(String raw) {
 
+        System.out.println(c.DEF + "-".repeat(24));
         long start = System.nanoTime();
 
-        String expression = raw
-            .replaceAll("([\\^*\\/%+\\-\\(\\)])", " $0 ") // adds spaces on operators
-            .replaceAll("\\s+", " ") // removes extra spaces
-            // .replaceAll("(\\()\\s", "(") // "( " -> "("
-            // .replaceAll("\\s\\)", ")") // " )" -> ")"
-            .trim()
-            .toUpperCase(); 
+        String expression = raw // 1
+            // removes spaces on operators
+            // .replaceAll("([\\^*\\/%+\\-\\(\\)])", " $0 ") // O(n)
+            // removes extra spaces
+            // .trim() // O(n)
+            .replaceAll("\\s+", "") // O(n)
+            .toUpperCase(); // O(n)
 
         double time = (System.nanoTime() - start) / 1000000.0;
         System.out.println(time);
+        System.out.println();
+
+        message = "<p>" + time + " ms -> <b style=\"color: green\">NORMALISATION</b></p><br>";
         
         return expression;
 
@@ -28,33 +34,36 @@ public class Engine {
     
 
     // checks for errors before proceeding
+    // O(n)
+    // WHERE n IS TRIMMED STRING LENGTH
     public Queue<String> validate(String expression) {
-
-        System.out.println(c.DEF + "-".repeat(24));
 
         this.expression = expression;
 
         boolean isValid = true;
-        long start = System.nanoTime();
+        
         double time;
+        long start = System.nanoTime();
         
 
-        if(!ErrorHandler.tokenSize(expression)) {
+        // 1 + 
+        if(!ErrorHandler.tokenSize(expression)) { // 1 + 1
             time = (System.nanoTime() - start) / 1000000.0;
 
-            System.out.println(time + " ms");
+            System.out.println(time);
             System.out.println(c.RED + "ERROR : Invalid token amount!" + c.DEF);
             
             message = "<p>" + time + " ms -> <b style=\"color: red\">ERROR : Invalid token amount!</b></p>";
             isValid = false;
         }
         else {
-            int pos = ErrorHandler.invalidChar(expression);
+            int pos = ErrorHandler.invalidChar(expression); // 1 + 1 + 1 + 1 + n + 1
 
-            if(pos > -1) {
+            // 1 +
+            if(pos > -1) { 
                 time = (System.nanoTime() - start) / 1000000.0;
                 
-                System.out.println(time + " ms");
+                System.out.println(time);
                 System.out.println(
                     c.RED + "ERROR : Invalid character!\n" +
                     " ".repeat(pos) + "v\n"  + c.DEF +
@@ -70,12 +79,13 @@ public class Engine {
                 isValid = false;
             }
             else {
-                pos = ErrorHandler.maformedExp(expression);
+                pos = ErrorHandler.maformedExp(expression); // 1 + 1 + 1 + 1 + n + 1
 
+                // 1 +
                 if(pos > -1) {
                     time = (System.nanoTime() - start) / 1000000.0;
                     
-                    System.out.println(time + " ms");
+                    System.out.println(time);
                     System.out.println(
                         c.RED + "ERROR : Malformed expression!\n" 
                         + " ".repeat(pos) + "v\n"  + c.DEF +
@@ -91,12 +101,13 @@ public class Engine {
                     isValid = false;
                 }
                 else {
-                    pos = ErrorHandler.zeroDiv(expression);
+                    pos = ErrorHandler.zeroDiv(expression); // 1 + 1 + 1 + 1 + n + 1
 
+                    // 1+ 
                     if(pos > -1) {
                         time = (System.nanoTime() - start) / 1000000.0;
 
-                        System.out.println(time + " ms");
+                        System.out.println(time);
                         System.out.println(
                             c.RED + "ERROR : Division by zero!\n" +
                             " ".repeat(pos) + "v\n"  + c.DEF +
@@ -112,12 +123,14 @@ public class Engine {
                         isValid = false;
                     }
                     else {
-                        String error = ErrorHandler.mismatchedPar(expression);
-                        
-                        if(error == null) {
+                        // 1 + 1 + 1 + 1 + n + 1 + 1 + 2 + n + 3n + n + n + 2 
+                        pos = ErrorHandler.mismatchedPar(expression); 
+
+                        // + 1 
+                        if(pos == -1) {
                             time = (System.nanoTime() - start) / 1000000.0;
 
-                            System.out.println(time + " ms");
+                            System.out.println(time);
 
                             message = 
                                 "<p>" + time + " ms -> <b style=\"color: green\">VALIDATION</b></p><br>";
@@ -125,14 +138,14 @@ public class Engine {
                         else {
                             time = (System.nanoTime() - start) / 1000000.0;
                             
-                            System.out.println(time + " ms");
+                            System.out.println(time);
                             System.out.println(
                                 c.RED + "ERROR : Mismatched parenthesis!\n" +
-                                error + "\n" + c.DEF +
+                            //     // error + "\n" + c.DEF +
                                 expression + "\n"
                             );
 
-                            pos = error.indexOf("v");
+                            // // pos = error.indexOf("v");
 
                             message = 
                                 "<p>" + time + " ms -> <b style=\"color: red\">ERROR : Mismatched parenthesis!</b></p>" +
@@ -150,12 +163,13 @@ public class Engine {
         // PROCEED
         if(isValid) {
             System.out.println(c.YEL + expression + c.DEF);
+            System.out.println();
 
-            String a[] = expression.split(" ");
+            String a[] = expression.split("(?=[+\\-*\\/%^\\(\\)])|(?<=[+\\-*\\/%^\\(\\)])");
             Queue<String> q = new Queue<>(String.class, a.length);
 
-            for (String string : a) 
-                q.enqueue(string);
+
+            for (String string : a) q.enqueue(string);
 
             return q;
         } 
@@ -165,6 +179,8 @@ public class Engine {
 
 
     // conversion functtion
+    // O(n) = n + an inner loop but its not a nested one
+    // WHERE n IS TOKEN SIZE
     public Queue<String> convert(Queue<String> tokens) {
 
         System.out.println();
@@ -177,68 +193,80 @@ public class Engine {
         
         long start = System.nanoTime();
         do {
-            token = tokens.dequeue();
+            token = tokens.dequeue(); // n * (1 + 10)
 
             // INSERT OPERANDS INTO QUEUE
-            if(token.matches("\\d+|[A-Z]")) 
+            if(token.matches("\\d+|[A-Z]")) // n
+                // 7
                 postfix.enqueue(token);
                 
 
             else {                 
-                currentPrecedence = Helpers.fetchPrecedence(token);
+                // 
+
+                currentPrecedence = Helpers.fetchPrecedence(token); // n * (1 + 6)
                 
                 // PUSH OPERATORS INTO STACK
-                if(stack.isEmpty() || stackPrecedence < currentPrecedence || token.equals("(")) {
-                    stack.push(token);
+                if(stack.isEmpty() || stackPrecedence < currentPrecedence || token.equals("(")) { // n
+                    // 5
+
+                    stack.push(token); 
                     stackPrecedence = currentPrecedence;
                 }
 
                     
                 // POP OPERATORS FROM STACK
                 else {
-                    
+                    //
+
                     // parenthesis group found - pop operators until opening parenthesis
-                    if(token.contains(")")) {
-                        while(!stack.getTop().equals("(")) {
+                    // 1 +
+                    if(token.equals(")")) { // 2
+                        while(!stack.getTop().equals("(")) { // 
                             postfix.enqueue(stack.pop());   
                         }
 
-                        stack.pop();
-                        stackPrecedence = Helpers.fetchPrecedence(stack.getTop());
+                        stack.pop(); // 1
+                        stackPrecedence = Helpers.fetchPrecedence(stack.getTop());  // 1 + 6 + 1
                     }
 
+                    // 1 +
                     else if(stackPrecedence >= currentPrecedence) {
+                        //
 
                         // exponent
-                        if(stackPrecedence == currentPrecedence && stackPrecedence == 2) {
-                            stack.push(token);
-                            stackPrecedence = currentPrecedence;
+                        if(stackPrecedence == currentPrecedence && stackPrecedence == 2) { // 1
+                            stack.push(token); // 4
+                            stackPrecedence = currentPrecedence; //1
                         }
 
                         // higher or equal level
                         else {
+                            //
+
                             do {
                                 postfix.enqueue(stack.pop());   
                                 stackPrecedence = Helpers.fetchPrecedence(stack.getTop());
                             }
                             while(stackPrecedence >= currentPrecedence && !stack.isEmpty());
                             
-                            stack.push(token);
-                            stackPrecedence = Helpers.fetchPrecedence(stack.getTop());
+                            stack.push(token); // 4
+                            stackPrecedence = Helpers.fetchPrecedence(stack.getTop()); // 1 + 6 + 1
                         }
                     }
                     
                 }
             }
         }
-        while(!tokens.isEmpty());
+        while(!tokens.isEmpty()); // n
 
 
-        while(!stack.isEmpty()) postfix.enqueue(stack.pop());   
+        while(!stack.isEmpty()) 
+            postfix.enqueue(stack.pop()); 
 
 
         double time = (System.nanoTime() - start) / 1000000.0;
-        System.out.println(time  + " ms" + c.YEL);
+        System.out.println(time + c.YEL);
 
         message = "<p>" + time + " ms -> <b style=\"color: green\">CONVERSION</b></p<br>";
 
@@ -250,59 +278,65 @@ public class Engine {
 
 
     // evaluation postfix solution
+    // O(n) = 38n
+    // WHERE n IS CONVERTED EXPRESSION TOKEN SIZE (NO PARENTHESIS)
     public double evaluate(Queue<String> queue) {
 
         System.out.println();
 
         boolean isValid = true;
         int n = 0;;
-        long start = System.nanoTime();
-
+        
         String token;
         Stack<Double> solution = new Stack<>(Double.class, queue.getCapacity());
-
+        
+        long start = System.nanoTime();
         do {
-            token = queue.dequeue();
+            token = queue.dequeue(); // n * (1 + 9)
             
-            if(token.matches("[A-Z]")) {
-                // error = error.concat(token);
+            if(token.matches("[A-Z]")) { // n *  (1 + O(1))
+                // 2
 
                 solution.push(-1.0);
                 isValid = false;
             }
             else {
-                
-                // OPERATORS
-                if("+-*/%^".contains(token)) {
-                    double R = solution.pop();
-                    double L = solution.pop();
+                // 
 
-                    if((token.equals("/") || token.equals("%")) && R == 0) {
-                        solution.push(0.0);
-                        isValid = false; // zero div checker
+                // OPERATORS
+                if("+-*/%^".contains(token)) { // n * (1 + O(1))
+                    // n * 23
+
+                    double R = solution.pop(); // 1 + 7
+                    double L = solution.pop(); // 1 + 7
+
+                    if((token.equals("/") || token.equals("%")) && R == 0) { // 1 + 1
+                        //5
+
+                        solution.push(0.0); // 4
+                        isValid = false; // zero div checker // 1
                     }
-                    else solution.push(Helpers.compute(L, R, token));
+                    else 
+                        solution.push(Helpers.compute(L, R, token)); // 4 + 3
                 }
 
                 // OPERANDS
                 else {
-                    solution.push(Double.parseDouble(token));
+                    solution.push(Double.parseDouble(token)); // 1 + O(n) <- n is token length
                     n++;
                 } 
                 
             }
         }
-        while(!queue.isEmpty() && isValid && !solution.getTop().isInfinite());
+        while(!queue.isEmpty() && isValid && !solution.getTop().isInfinite()); // n
 
 
         double time = (System.nanoTime() - start) / 1000000.0;
-        System.out.println(time +  " ms" + c.YEL + "\n" +solution.getTop());
+        System.out.println(time + c.YEL + "\n" + solution.getTop());
         
                     
         if(isValid && !solution.getTop().isInfinite()) {
             message = "<p><br>" + time + " ms -> <b style=\"color: green\">EVALUATION</b></p>";
-
-            System.out.println(solution.getTop());
             return solution.getTop();
         }
         else {
@@ -325,12 +359,9 @@ public class Engine {
                 return -1;
             }
             else {
-                // String l[] = expression.spl
-                System.out.println(n);
-                
                 int e = 0;
                 do {
-                    if(Character.isDigit(expression.charAt(e)) && Character.isSpaceChar(expression.charAt(e+1))) n--;
+                    if(Character.isDigit(expression.charAt(e))) n--;
                     e++;
                 }
                 while(n > 0);
@@ -338,7 +369,7 @@ public class Engine {
 
                 int i = e;
                 do i--;
-                while(!((expression.charAt(i) == '(') && (expression.charAt(i-2) == '/' || expression.charAt(i-2) == '%')));
+                while(!((expression.charAt(i) == '(') && (expression.charAt(i-1) == '/' || expression.charAt(i-1) == '%')));
 
                 System.out.println(c.RED + "ERROR : Division by zero!\n" + c.DEF);
 
@@ -356,5 +387,3 @@ public class Engine {
 
     
 }
-
-// 9 - 6 / 10 + 1 % 9 ^ 4 + 6 * 4 + 1 - 10 - 10 ^ 10 ^ 2 + 3 * 4 - 10 + ( 1 + ( 8 ^ 9 - 8 ^ 10 / ( 1 ^ 3 % 1 )^ 7 % ( 4 + 10 * 2 * 5 - 4 + 3 % 7 % 3 - 1 )+ ( 3 ^ 6 - 5 - 7 )+ 10 % 6 + ( 9 + 4 )- 3 ))
